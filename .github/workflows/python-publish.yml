@@ -1,0 +1,36 @@
+# GitHub Actions workflow for publishing a Python package to PyPI
+name: Upload Python Package
+
+on:
+  release:
+    types: [published]  # Runs when a new release is published on GitHub
+
+permissions:
+  contents: read
+
+jobs:
+  release-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine  # Twine helps securely publish packages
+
+    - name: Build Distribution
+      run: python -m build
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: twine upload dist/*
